@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>个人信息获取</title>
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery.form/4.2.1/jquery.form.min.js"></script>
+    <script>
+        //判断浏览器是否支持HTML5 Canvas
+        window.onload = function () {
+            try {
+                //动态创建一个canvas元 ，并获取他2Dcontext。如果出现异常则表示不支持 document.createElement("canvas").getContext("2d");
+                // document.getElementById("support").innerHTML = "浏览器支持HTML5 CANVAS";
+            }
+            catch (e) {
+                // document.getElementByIdx("support").innerHTML = "浏览器不支持HTML5 CANVAS";
+            }
+        };
+        //这段代 主要是获取摄像头的视频流并显示在Video 签中
+        window.addEventListener("DOMContentLoaded", function () {
+            var canvas = document.getElementById("canvas"),
+                context = canvas.getContext("2d"),
+                video = document.getElementById("video"),
+                videoObj = { "video": true },
+                errBack = function (error) {
+                    console.log("Video capture error: ", error.code);
+                };
+            $("#snap").click(function () {
+                context.drawImage(video, 0, 40, 330, 250);
+            })
+            if (navigator.getUserMedia) {
+                navigator.getUserMedia(videoObj, function (stream) {
+                    video.srcObject = stream;
+                    video.play();
+                }, errBack);
+            } else if (navigator.webkitGetUserMedia) {
+                navigator.webkitGetUserMedia(videoObj, function (stream) {
+                    video.src = window.webkitURL.createObjectURL(stream);
+                    video.play();
+                }, errBack);
+            }
+        }, false);
+
+        //上传服务器
+        // function CatchCode() {
+        //     var canvans = document.getElementById("canvas");
+        //     //获取浏览器页面的画布对象
+        //     //以下开始编 数据
+        //     var imgData = canvans.toDataURL();
+        //     console.log(canvans.toLocaleString());
+        //     //将图像转换为base64数据
+        //     var base64Data = imgData.substr(22);
+        //     //在前端截取22位之后的字符串作为图像数据
+        //     //开始异步上
+        //     $("#ok").click(function() {
+        //         console.log('123')
+        //         $("#form1").ajaxSubmit({
+        //             url: "http://localhost/M-IM/h5_upImg.php",
+        //             type: "post",
+        //             dataType: 'json',
+        //             success: function(data) {
+        //                 alert("成功！");
+        //             },
+        //             error: function(data) {
+        //             }
+        //         });
+        //     });
+        //
+        //     $.post("uploadImgCode.ashx", { "img": base64Data }, function (data, status) {
+        //         if (status == "success") {
+        //             if (data == "OK") {
+        //                 alert("图片已经解析");
+        //             }
+        //             else {
+        //                 // alert(data);
+        //             }
+        //         }
+        //         else {
+        //             alert("数据上传失败");
+        //         }
+        //     }, "text");
+        // }
+
+        function push() {
+            var data = new FormData($("#form1")[0]);
+            var canvans = document.getElementById("canvas");
+            var imgData = canvans.toDataURL();
+            console.log(canvans.toLocaleString());
+            data.append("card",$("#card").val());
+            data.append("name",$("#name").val());
+            data.append("canvas",$("#canvas").val());
+            console.log(canvas);
+            $.ajax({
+                url: 'http://localhost:8090/user',
+                type: 'post',
+                contentType: false,
+                data: data ,
+                processData: false,
+                success:function(info){
+                    console.log(info)
+                },
+                error:function(err){
+                    console.log(err)
+                }
+            });
+        }
+
+        function savea1(selector,name){
+            var a = document.createElement('a')
+            a.download = name || 'pic'
+            a.href = document.getElementById("canvas").toDataURL();
+            a.click();
+        }
+
+
+    </script>
+</head>
+<body>
+<form id="form1" method="post" enctype="multipart/form-data">
+<div id="contentHolder">
+    <video id="video" width="320" height="320" autoplay></video>
+    <input type="button" id="snap" style="width:100px;height:35px;" value="拍 照" />
+    <canvas style="" id="canvas" width="320" height="320"></canvas>
+    <input type="button" value="上传" id="ok" style="width:100px;height:35px;" onclick="push()"/>
+    <input type="button" value="保存到本地" id="baocun" style="width:100px;height:35px;" onclick="savea1('canvas')"/>
+
+</div>
+<div class="form-group">
+    <label class="sr-only" for="name">身份证号：</label>
+    <input type="text" class="form-control" name="card" id="card" placeholder="请输入身份证号">
+</div>
+<div class="form-group">
+    <label class="sr-only" for="name">姓名：&nbsp &nbsp &nbsp &nbsp</label>
+    <input type="text" class="form-control" name="name" id="name" placeholder="请输入姓名">
+</div>
+</form>
+</body>
+</html>
